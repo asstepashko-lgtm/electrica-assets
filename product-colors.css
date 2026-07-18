@@ -98,8 +98,11 @@
 .product-colors__list{
 
     display:flex;
+    flex-wrap:wrap;
 
-    gap:10px;
+    gap:8px 10px;
+
+    width:100%;
 
 }
 
