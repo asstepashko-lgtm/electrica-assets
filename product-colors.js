@@ -281,9 +281,7 @@ renderCatalog() {
 )
         .forEach(card => {
 
-           if (card.querySelector(".product-colors")) {
-    return;
-}
+ card.querySelectorAll(".product-colors").forEach(el => el.remove());
 
             const uid =
                 card.dataset.productUid ||
@@ -311,18 +309,12 @@ const block = this.createColorBlock(
     current
 );
             const target =
-    card.querySelector(".t-catalog__card_sku") ||
+    card.querySelector(".js-product-controls-wrapper") ||
     card.querySelector(".js-catalog-price-wrapper");
 
-if (!target) {
-    return;
-}
+if (!target) return;
 
-if (target.classList.contains("t-catalog__card_sku")) {
-    target.after(block);
-} else {
-    target.before(block);
-}
+target.prepend(block);
 
         });
 
