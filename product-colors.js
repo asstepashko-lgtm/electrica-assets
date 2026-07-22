@@ -300,6 +300,9 @@ renderCatalog() {
             }
 
             const variants = this.getVariants(current);
+console.log("Карточка:", uid);
+console.log("Вариантов:", variants.length);
+console.log(current.title, this.getVariants(current).length);
 
             if (variants.length < 2) {
                 return;
@@ -310,8 +313,7 @@ const block = this.createColorBlock(
 );
 
 const target = card.querySelector(".t-catalog__card__sku");
-console.log("Карточка:", uid);
-console.log("Вариантов:", variants.length);
+
 
 if (!target) {
     return;
@@ -319,7 +321,7 @@ if (!target) {
 
 target.after(block);
 console.log("Target:", target);
-console.log(current.title, this.getVariants(current).length);
+
 
         });
 
