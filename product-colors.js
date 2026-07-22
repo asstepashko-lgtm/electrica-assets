@@ -283,24 +283,27 @@ renderCatalog() {
 
  card.querySelectorAll(".product-colors").forEach(el => el.remove());
 
-            const uid =
-                card.dataset.productUid ||
-                card.querySelector("[data-product-uid]")?.dataset.productUid;
+            const sku = card
+    .querySelector(".js-product-sku")
+    ?.textContent
+    ?.trim();
 
-            if (!uid) {
-                return;
-            }
+if (!sku) {
+    return;
+}
 
-            const current = this.products.find(product =>
-                String(product.uid) === String(uid)
-            );
+const current = this.products.find(product =>
+    String(product.sku).trim() === sku
+);
 
-            if (!current) {
-                return;
-            }
+if (!current) {
+    console.log("Не найден SKU:", sku);
+    return;
+}
 
-            const variants = this.getVariants(current);
-console.log("Карточка:", uid);
+const variants = this.getVariants(current);
+
+            console.log("SKU:", sku);
 console.log("Вариантов:", variants.length);
 console.log(current.title, this.getVariants(current).length);
 
@@ -406,7 +409,7 @@ console.count("createColorBlock");
 
         item.dataset.url = product.url;
 
-        item.dataset.uid = product.uid;
+        item.dataset.uid = product.sku;
 
         item.dataset.color = colorName;
 
@@ -416,7 +419,7 @@ console.count("createColorBlock");
             item.style.border = "1px solid #cfcfcf";
         }
 
-        if (String(product.uid) === String(current.uid)) {
+        if (String(product.sku) === String(current.sku)) {
             item.classList.add("active");
         }
 
@@ -467,44 +470,90 @@ console.count("mouseleave");
     return block;
 
 }
-openVariant(uid) {
+openVariant(sku) {
 
-    uid = String(uid);
+    sku = String(sku).trim();
 
     const openCard = () => {
 
-        const card = document.querySelector(
-            `.js-product[data-product-uid="${uid}"]`
-        );
+        const card = [...document.querySelectorAll(".js-product")].find(card => {
+
+            const cardSku = card
+                .querySelector(".js-product-sku")
+                ?.textContent
+                ?.trim();
+
+            return cardSku === sku;
+
+        });
 
         if (card) {
 
-            const link = card.querySelector(
-                'a[href*="/tproduct/"]'
-            );
+            const link = card.querySelector('a[href*="/tproduct/"]');
 
             if (link) {
-               link.dispatchEvent(new MouseEvent("mousedown", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
 
-link.dispatchEvent(new MouseEvent("mouseup", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
+                link.dispatchEvent(new MouseEvent("mousedown", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
 
-link.dispatchEvent(new MouseEvent("click", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
+                link.dispatchEvent(new MouseEvent("mouseup", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
+
+                link.dispatchEvent(new MouseEvent("click", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
+
                 return;
             }
-
         }
+
+        const product = this.products.find(
+            p => String(p.sku).trim() === sku
+        );
+
+        if (product) {
+            location.href = product.url;
+        }
+
+    };
+
+    const popup = document.querySelector(".t-popup_show");
+
+    if (!popup) {
+        openCard();
+        return;
+    }
+
+    const close = popup.querySelector(".t-popup__close");
+
+    if (!close) {
+        openCard();
+        return;
+    }
+
+    close.click();
+
+    const timer = setInterval(() => {
+
+        if (document.querySelector(".t-popup_show")) {
+            return;
+        }
+
+        clearInterval(timer);
+
+        requestAnimationFrame(openCard);
+
+    }, 20);
+
+}
 
         const product = this.products.find(
             p => String(p.uid) === uid
