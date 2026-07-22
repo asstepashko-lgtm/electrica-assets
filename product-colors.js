@@ -281,30 +281,27 @@ renderCatalog() {
 )
         .forEach(card => {
 
- 
-            const sku = card
-    .querySelector(".js-product-sku")
-    ?.textContent
-    ?.trim();
-
-if (!sku) {
+           if (card.querySelector(".product-colors")) {
     return;
 }
 
-const current = this.products.find(product =>
-    String(product.sku).trim() === sku
-);
+            const uid =
+                card.dataset.productUid ||
+                card.querySelector("[data-product-uid]")?.dataset.productUid;
 
-if (!current) {
-    console.log("Не найден SKU:", sku);
-    return;
-}
+            if (!uid) {
+                return;
+            }
 
-const variants = this.getVariants(current);
+            const current = this.products.find(product =>
+                String(product.uid) === String(uid)
+            );
 
-            console.log("SKU:", sku);
-console.log("Вариантов:", variants.length);
-console.log(current.title, this.getVariants(current).length);
+            if (!current) {
+                return;
+            }
+
+            const variants = this.getVariants(current);
 
             if (variants.length < 2) {
                 return;
@@ -313,23 +310,19 @@ const block = this.createColorBlock(
     variants,
     current
 );
-
-const target = card.querySelector(".t-catalog__card__sku");
+            const target =
+    card.querySelector(".t-catalog__card_sku") ||
+    card.querySelector(".js-catalog-price-wrapper");
 
 if (!target) {
     return;
 }
 
-const old = card.querySelector(".product-colors");
-
-if (old) {
-    old.replaceWith(block);
-} else {
+if (target.classList.contains("t-catalog__card_sku")) {
     target.after(block);
+} else {
+    target.before(block);
 }
-
-console.log("Target:", target);
-
 
         });
 
@@ -414,7 +407,7 @@ console.count("createColorBlock");
 
         item.dataset.url = product.url;
 
-        item.dataset.uid = product.sku;
+        item.dataset.uid = product.uid;
 
         item.dataset.color = colorName;
 
@@ -424,7 +417,7 @@ console.count("createColorBlock");
             item.style.border = "1px solid #cfcfcf";
         }
 
-        if (String(product.sku) === String(current.sku)) {
+        if (String(product.uid) === String(current.uid)) {
             item.classList.add("active");
         }
 
@@ -475,53 +468,47 @@ console.count("mouseleave");
     return block;
 
 }
-openVariant(sku) {
+openVariant(uid) {
 
-    sku = String(sku).trim();
+    uid = String(uid);
 
     const openCard = () => {
 
-        const card = [...document.querySelectorAll(".js-product")].find(card => {
-
-            const cardSku = card
-                .querySelector(".js-product-sku")
-                ?.textContent
-                ?.trim();
-
-            return cardSku === sku;
-
-        });
+        const card = document.querySelector(
+            `.js-product[data-product-uid="${uid}"]`
+        );
 
         if (card) {
 
-            const link = card.querySelector('a[href*="/tproduct/"]');
+            const link = card.querySelector(
+                'a[href*="/tproduct/"]'
+            );
 
             if (link) {
+               link.dispatchEvent(new MouseEvent("mousedown", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
 
-                link.dispatchEvent(new MouseEvent("mousedown", {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
+link.dispatchEvent(new MouseEvent("mouseup", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
 
-                link.dispatchEvent(new MouseEvent("mouseup", {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
-
-                link.dispatchEvent(new MouseEvent("click", {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
-
+link.dispatchEvent(new MouseEvent("click", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
                 return;
             }
+
         }
 
         const product = this.products.find(
-            p => String(p.sku).trim() === sku
+            p => String(p.uid) === uid
         );
 
         if (product) {
@@ -533,15 +520,19 @@ openVariant(sku) {
     const popup = document.querySelector(".t-popup_show");
 
     if (!popup) {
+
         openCard();
         return;
+
     }
 
     const close = popup.querySelector(".t-popup__close");
 
     if (!close) {
+
         openCard();
         return;
+
     }
 
     close.click();
@@ -559,7 +550,6 @@ openVariant(sku) {
     }, 20);
 
 }
-
 refresh() {
 
     this.products = this.readCatalog();
@@ -586,29 +576,17 @@ window.addEventListener("load", () => {
 
     window.ProductColors.init();
 
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(() => {
 
-    const needRender = mutations.some(m =>
-        [...m.addedNodes].some(node =>
-            node.nodeType === 1 &&
-            (
-                node.classList?.contains("js-product") ||
-                node.querySelector?.(".js-product")
-            )
-        )
-    );
+        clearTimeout(window.ProductColors.observerTimer);
 
-    if (!needRender) return;
+        window.ProductColors.observerTimer = setTimeout(() => {
 
-    clearTimeout(window.ProductColors.observerTimer);
+            window.ProductColors.renderCatalog();
 
-    window.ProductColors.observerTimer = setTimeout(() => {
+        }, 100);
 
-        window.ProductColors.renderCatalog();
-
-    }, 100);
-
-});
+    });
 
     observer.observe(document.body, {
 
