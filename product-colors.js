@@ -281,8 +281,7 @@ renderCatalog() {
 )
         .forEach(card => {
 
- card.querySelectorAll(".product-colors").forEach(el => el.remove());
-
+ 
             const sku = card
     .querySelector(".js-product-sku")
     ?.textContent
@@ -317,12 +316,18 @@ const block = this.createColorBlock(
 
 const target = card.querySelector(".t-catalog__card__sku");
 
-
 if (!target) {
     return;
 }
 
-target.after(block);
+const old = card.querySelector(".product-colors");
+
+if (old) {
+    old.replaceWith(block);
+} else {
+    target.after(block);
+}
+
 console.log("Target:", target);
 
 
@@ -581,17 +586,29 @@ window.addEventListener("load", () => {
 
     window.ProductColors.init();
 
-    const observer = new MutationObserver(() => {
+    const observer = new MutationObserver((mutations) => {
 
-        clearTimeout(window.ProductColors.observerTimer);
+    const needRender = mutations.some(m =>
+        [...m.addedNodes].some(node =>
+            node.nodeType === 1 &&
+            (
+                node.classList?.contains("js-product") ||
+                node.querySelector?.(".js-product")
+            )
+        )
+    );
 
-        window.ProductColors.observerTimer = setTimeout(() => {
+    if (!needRender) return;
 
-            window.ProductColors.renderCatalog();
+    clearTimeout(window.ProductColors.observerTimer);
 
-        }, 100);
+    window.ProductColors.observerTimer = setTimeout(() => {
 
-    });
+        window.ProductColors.renderCatalog();
+
+    }, 100);
+
+});
 
     observer.observe(document.body, {
 
