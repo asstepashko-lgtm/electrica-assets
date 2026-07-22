@@ -555,49 +555,6 @@ openVariant(sku) {
 
 }
 
-        const product = this.products.find(
-            p => String(p.uid) === uid
-        );
-
-        if (product) {
-            location.href = product.url;
-        }
-
-    };
-
-    const popup = document.querySelector(".t-popup_show");
-
-    if (!popup) {
-
-        openCard();
-        return;
-
-    }
-
-    const close = popup.querySelector(".t-popup__close");
-
-    if (!close) {
-
-        openCard();
-        return;
-
-    }
-
-    close.click();
-
-    const timer = setInterval(() => {
-
-        if (document.querySelector(".t-popup_show")) {
-            return;
-        }
-
-        clearInterval(timer);
-
-        requestAnimationFrame(openCard);
-
-    }, 20);
-
-}
 refresh() {
 
     this.products = this.readCatalog();
