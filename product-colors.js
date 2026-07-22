@@ -308,13 +308,18 @@ const block = this.createColorBlock(
     variants,
     current
 );
-            const target =
-    card.querySelector(".js-product-controls-wrapper") ||
-    card.querySelector(".js-catalog-price-wrapper");
 
-if (!target) return;
+const target = card.querySelector(".t-catalog__card__sku");
+console.log("Карточка:", uid);
+console.log("Вариантов:", variants.length);
 
-target.prepend(block);
+if (!target) {
+    return;
+}
+
+target.after(block);
+console.log("Target:", target);
+console.log(current.title, this.getVariants(current).length);
 
         });
 
