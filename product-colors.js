@@ -97,23 +97,37 @@ async init() {
 }
 readCatalog() {
 
-    const keys = Object.keys(localStorage)
-        .filter(key => key.startsWith("pc_catalog_"));
+    const products = new Map();
 
-    if (!keys.length) {
+    Object.keys(localStorage)
+        .filter(key => key.startsWith("pc_catalog_"))
+        .forEach(key => {
 
-        this.log("Каталог не найден");
+            try {
 
-        return [];
+                const cache = JSON.parse(localStorage.getItem(key));
 
-    }
+                if (!cache?.products) return;
 
-    const cache = JSON.parse(
-        localStorage.getItem(keys[0])
-    );
+                cache.products.forEach(product => {
 
-    return cache.products || [];
+                    if (product?.sku) {
+                        products.set(product.sku, product);
+                    }
 
+                });
+
+            } catch (e) {
+                console.warn("Ошибка чтения", key, e);
+            }
+
+        });
+
+    const result = [...products.values()];
+
+    this.log("Товаров:", result.length);
+
+    return result;
 }
 getCurrentUid() {
 
