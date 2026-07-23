@@ -549,19 +549,35 @@ link.dispatchEvent(new MouseEvent("click", {
 
     }
 
-  
+  close.click();
 
-    const timer = setInterval(() => {
+    popup.style.transition = "opacity .12s";
+popup.style.opacity = "0";
 
-        if (document.querySelector(".t-popup_show")) {
-            return;
-        }
+close.click();
 
-        clearInterval(timer);
+setTimeout(() => {
 
-        requestAnimationFrame(openCard);
+    openCard();
+
+    const wait = setInterval(() => {
+
+        const newPopup = document.querySelector(".t-popup_show");
+
+        if (!newPopup) return;
+
+        clearInterval(wait);
+
+        newPopup.style.opacity = "0";
+        newPopup.style.transition = "opacity .12s";
+
+        requestAnimationFrame(() => {
+            newPopup.style.opacity = "1";
+        });
 
     }, 20);
+
+}, 120);
 
 }
 refresh() {
