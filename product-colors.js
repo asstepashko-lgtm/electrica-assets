@@ -549,7 +549,7 @@ link.dispatchEvent(new MouseEvent("click", {
 
     }
 
-    close.click();
+  
 
     const timer = setInterval(() => {
 
