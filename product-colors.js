@@ -336,7 +336,14 @@ if (!target) {
 if (target.classList.contains("t-catalog__card_sku")) {
     target.after(block);
 } else {
-    target.before(block);
+    console.log("TARGET", target);
+console.log("CONNECTED", target.isConnected);
+console.log("PARENT", target.parentNode);
+
+target.parentNode.insertBefore(block, target);
+
+console.log("BLOCK CONNECTED", block.isConnected);
+console.log("AFTER", target.parentNode.innerHTML);
 }
 
         });
