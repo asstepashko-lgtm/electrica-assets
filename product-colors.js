@@ -112,8 +112,8 @@ readCatalog() {
 
                 cache.products.forEach(product => {
 
-                    if (product?.sku) {
-                        products.set(product.sku, product);
+                   if (product?.uid) {
+                        products.set(String(product.uid), product);
                     }
 
                 });
@@ -606,6 +606,9 @@ window.ProductColors = new ProductColors();
 window.addEventListener("load", () => {
 
     window.ProductColors.init();
+window.addEventListener("catalogUpdated", () => {
+    window.ProductColors.refresh();
+});
 
     const observer = new MutationObserver(() => {
 
