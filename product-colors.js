@@ -101,6 +101,7 @@ async init() {
     }
 
      this.log("Товаров:", this.products.length);
+console.log("renderCatalog finished");
 
 }
 readCatalog() {
