@@ -102,6 +102,10 @@ async loadCatalog(storepartuid) {
         }
 
         const json = await response.json();
+console.log(json);
+console.log("products:", json.products.length);
+console.log("next slice:", slice);
+console.log(json);
 
         const part = json.products || [];
 
