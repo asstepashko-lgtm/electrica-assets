@@ -327,7 +327,7 @@ renderCatalog() {
 const old = card.querySelector(".product-colors");
 
 if (old) {
-    return;
+      old.remove();
 }
             const uid =
                 card.dataset.productUid ||
@@ -337,7 +337,9 @@ if (old) {
                 return;
             }
 
-          const current = this.products.find(...);
+   const current = this.products.find(product =>
+    String(product.uid) === String(uid)
+);
 
 if (!current) {
     return;
