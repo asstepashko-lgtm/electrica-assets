@@ -260,9 +260,9 @@ render() {
     block.replaceWith(newBlock);
 
 }
-renderCatalog() {
+renderCatalog(root = document) {
 
-   document.querySelectorAll(
+root.querySelectorAll(
     ".js-product[data-product-uid]"
 )
         .forEach(card => {
@@ -427,6 +427,19 @@ variants = [...new Map(
     return block;
 
 }
+renderRecommendations() {
+
+    const container = document.querySelector(
+        ".t-catalog__relevants__container"
+    );
+
+    if (!container) {
+        return;
+    }
+
+    this.renderCatalog(container);
+
+}
 openVariant(uid) {
 
     uid = String(uid);
@@ -514,11 +527,12 @@ refresh() {
         this.render();
     }
 
-    this.renderCatalog();
+    this.renderRecommendations();
 
 }
 
 }
+
 
 window.ProductColors = new ProductColors();
 
