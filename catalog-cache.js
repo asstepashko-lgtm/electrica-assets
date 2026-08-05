@@ -119,6 +119,7 @@ async loadCatalog(api) {
         }
 
         const json = await response.json();
+console.log(json);
 
         const part = json.products || [];
 
