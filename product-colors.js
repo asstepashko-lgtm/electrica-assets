@@ -172,7 +172,27 @@ getCharacteristic(product, title) {
 
 }
 
-getVariants
+getVariants(product) {
+
+    const group = this.getCharacteristic(
+        product,
+        CONFIG.groupField
+    );
+
+    if (!group) {
+        return [product];
+    }
+
+    return this.products.filter(item =>
+
+        this.getCharacteristic(
+            item,
+            CONFIG.groupField
+        ) === group
+
+    );
+
+}
 
 
 render() {
