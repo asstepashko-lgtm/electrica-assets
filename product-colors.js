@@ -340,9 +340,9 @@ if (old) {
             }
 
    const current = this.products.find(product =>
-console.log("current =", current);
     String(product.uid) === String(uid)
 );
+console.log("current =", current);
 
 if (!current) {
     return;
