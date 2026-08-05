@@ -16,6 +16,19 @@ const CONFIG = {
     debug: true
 
 };
+const STORE_PARTS = [
+
+    {
+        name: "Voltum",
+        storepartuid: "909613166454"
+    },
+
+    {
+        name: "Bironi",
+        storepartuid: "300286181934"
+    }
+
+];
 
 class CatalogCache {
 
@@ -29,114 +42,74 @@ class CatalogCache {
 
     }
 
-   async init() {
+  async init() {
 
     this.log("init");
 
-    const api = await this.findApi();
+    let products = [];
 
-    if (!api) {
-        return;
+    for (const part of STORE_PARTS) {
+
+        this.log("Загружаем", part.name);
+
+        const list = await this.loadCatalog(part.storepartuid);
+
+        this.log(
+            part.name,
+            list.length
+        );
+
+        products.push(...list);
+
     }
 
-    const products = await this.loadCatalog(api);
+    this.log(
+        "Всего товаров",
+        products.length
+    );
 
-    if (!products.length) {
-        return;
-    }
-
-   this.saveCatalog(products);
+    this.saveCatalog(products);
 
 }
 
-async findApi() {
 
-    return new Promise(resolve => {
-
-        let count = 0;
-
-        const timer = setInterval(() => {
-
-            const resource = performance
-                .getEntriesByType("resource")
-                .find(r =>
-                    r.name.includes("/api/getproductslist/")
-                );
-
-            if (resource) {
-
-                clearInterval(timer);
-
-                const url = new URL(resource.name);
-
-                url.searchParams.set(
-                    "c",
-                    Date.now()
-                );
-
-                this.log("API найден");
-
-                resolve(url.toString());
-
-                return;
-
-            }
-
-            count++;
-
-            if (count > 100) {
-
-                clearInterval(timer);
-
-                this.log("API не найден");
-
-                resolve(null);
-
-            }
-
-        },100);
-
-    });
-
-}
-async loadCatalog(api) {
-
-    const url = new URL(api);
-
-    url.searchParams.set("size", 500);
+async loadCatalog(storepartuid) {
 
     let slice = 1;
     let products = [];
 
     while (true) {
 
+        const url = new URL("https://store.tildaapi.com/api/getproductslist/");
+
+        url.searchParams.set("storepartuid", storepartuid);
         url.searchParams.set("slice", slice);
+        url.searchParams.set("size", 500);
+        url.searchParams.set("getallparts", "true");
+        url.searchParams.set("getoptions", "true");
+        url.searchParams.set("getbreadcrumbs[]", "parts");
+        url.searchParams.set("getbreadcrumbs[1]", "products");
+        url.searchParams.set("c", Date.now());
+
+        this.log(url.toString());
 
         const response = await fetch(url.toString());
 
         if (!response.ok) {
-            throw new Error("Ошибка загрузки каталога");
+            throw new Error(
+                `Ошибка загрузки ${storepartuid} (slice ${slice})`
+            );
         }
 
         const json = await response.json();
 
-console.log("Ключи ответа:", Object.keys(json));
-console.log("Количество товаров:", json.products?.length);
-console.log("Первый товар:", json.products?.[0]);
+        const part = json.products || [];
 
-const part = json.products || [];
-
-        this.log(`Slice ${slice}: ${part.length}`);
+        this.log(
+            `storepart ${storepartuid}, slice ${slice}: ${part.length}`
+        );
 
         products.push(...part);
-console.log(
-    "Bironi:",
-    part.filter(p => p.brand === "Bironi").length
-);
-
-console.log(
-    part.filter(p => p.brand === "Bironi").slice(0, 5)
-);
 
         if (part.length < 500) {
             break;
@@ -145,8 +118,6 @@ console.log(
         slice++;
 
     }
-
-    this.log("Всего товаров", products.length);
 
     return products;
 
