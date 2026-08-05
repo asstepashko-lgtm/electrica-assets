@@ -600,14 +600,39 @@ refresh() {
 }
 
 }
-window.ProductColors = new ProductColors();
+function observeCatalog(){
+
+    const observer = new MutationObserver(() => {
+
+        window.ProductColors.renderCatalog();
+
+    });
+
+    const catalog = document.querySelector(
+        ".js-store-grid-cont"
+    );
+
+    if (catalog) {
+
+        observer.observe(catalog, {
+            childList:true,
+            subtree:true
+        });
+
+    }
+
+}
 window.addEventListener("load", () => {
+
+    window.ProductColors = new ProductColors();
 
     window.ProductColors.init();
 
     setTimeout(() => {
 
         window.ProductColors.renderCatalog();
+
+        observeCatalog();
 
     }, 500);
 
