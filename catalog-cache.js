@@ -119,9 +119,12 @@ async loadCatalog(api) {
         }
 
         const json = await response.json();
-console.log(json);
 
-        const part = json.products || [];
+console.log("Ключи ответа:", Object.keys(json));
+console.log("Количество товаров:", json.products?.length);
+console.log("Первый товар:", json.products?.[0]);
+
+const part = json.products || [];
 
         this.log(`Slice ${slice}: ${part.length}`);
 
