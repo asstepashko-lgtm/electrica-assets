@@ -324,6 +324,7 @@ renderCatalog() {
     ".js-product[data-product-uid]"
 )
         .forEach(card => {
+console.log("Карточка", card.dataset.productUid);
 
 const old = card.querySelector(".product-colors");
 
@@ -339,6 +340,7 @@ if (old) {
             }
 
    const current = this.products.find(product =>
+console.log("current =", current);
     String(product.uid) === String(uid)
 );
 
