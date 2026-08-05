@@ -91,7 +91,6 @@ async init() {
         this.render();
     }
 
-    this.startPopupWatcher();
 
     this.log("Товаров:", this.products.length);
 
@@ -196,7 +195,7 @@ getVariants(product) {
 
 
 render() {
-console.count("render");
+
 
     if (!this.current) {
         return;
@@ -304,57 +303,18 @@ if (!target) {
 if (target.classList.contains("t-catalog__card_sku")) {
     target.after(block);
 } else {
-    console.log("TARGET", target);
-console.log("CONNECTED", target.isConnected);
-console.log("PARENT", target.parentNode);
+   
 
 target.parentNode.insertBefore(block, target);
 
-console.log("BLOCK CONNECTED", block.isConnected);
-console.log("AFTER", target.parentNode.innerHTML);
 }
 
         });
 
 }
-startPopupWatcher() {
 
-    let lastUid = null;
-
-    setInterval(() => {
-
-        const popup = document.querySelector(".t-popup_show");
-
-        if (!popup) {
-
-            lastUid = null;
-            return;
-
-        }
-
-        const uid = this.getCurrentUid();
-
-        if (!uid) {
-            return;
-        }
-
-        if (uid === lastUid) {
-            return;
-        }
-
-        lastUid = uid;
-
-        this.current = this.getCurrentProduct();
-
-        if (this.current) {
-            this.render();
-        }
-
-    }, 100);
-
-}
 createColorBlock(variants, current) {
-console.count("createColorBlock");
+
 
     const block = document.createElement("div");
 
@@ -415,7 +375,7 @@ variants = [...new Map(
         }
 
         item.addEventListener("mouseenter", () => {
-console.count("mouseenter");
+
 
             tooltip.textContent = colorName;
 
@@ -433,7 +393,7 @@ console.count("mouseenter");
         });
 
         item.addEventListener("mouseleave", () => {
-console.count("mouseleave");
+
 
             tooltip.classList.remove("show");
 
@@ -492,31 +452,7 @@ openVariant(uid) {
 
     }
 
-    popup.style.opacity = "0";
-
-    card.querySelector("a")?.click();
-
-    const wait = setInterval(() => {
-
-        const current = document.querySelector(
-            ".t-popup_show .js-catalog-product"
-        );
-
-        if (!current) return;
-
-        if (String(current.dataset.productUid) !== uid) {
-            return;
-        }
-
-        clearInterval(wait);
-
-        requestAnimationFrame(() => {
-
-            popup.style.opacity = "1";
-
-        });
-
-    }, 30);
+  card.querySelector("a")?.click();
 
 }
 refresh() {
@@ -550,16 +486,28 @@ window.addEventListener("catalogUpdated", () => {
 
     const observer = new MutationObserver(() => {
 
-        clearTimeout(window.ProductColors.observerTimer);
+    clearTimeout(window.ProductColors.observerTimer);
 
-        window.ProductColors.observerTimer = setTimeout(() => {
+    window.ProductColors.observerTimer = setTimeout(() => {
+
+        const popup = document.querySelector(".t-popup_show");
+
+        if (popup) {
+
+            window.ProductColors.current =
+                window.ProductColors.getCurrentProduct();
+
+            window.ProductColors.render();
+
+        } else {
 
             window.ProductColors.renderCatalog();
 
-        }, 100);
+        }
 
-    });
+    },100);
 
+});
     observer.observe(document.body, {
 
         childList: true,
