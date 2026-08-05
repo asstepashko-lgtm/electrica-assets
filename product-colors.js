@@ -601,12 +601,15 @@ refresh() {
 
 }
 
-window.ProductColors = new ProductColors();
-
 window.addEventListener("load", () => {
 
     window.ProductColors.init();
 
+    setTimeout(() => {
+
+        window.ProductColors.renderCatalog();
+
+    }, 500);
 
 });
 
