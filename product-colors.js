@@ -172,61 +172,7 @@ getCharacteristic(product, title) {
 
 }
 
-getVariants(product = this.current) {
-
-    if (!product) {
-        return [];
-    }
-
-    const group = (
-        this.getCharacteristic(
-            product,
-            CONFIG.groupField
-        ) || ""
-    ).trim();
-
-    // Нет группы — нет вариантов
-    if (!group) {
-        return [];
-    }
-
-    const variants = this.products.filter(item => {
-
-        const itemGroup = (
-            this.getCharacteristic(
-                item,
-                CONFIG.groupField
-            ) || ""
-        ).trim();
-
-        return itemGroup === group;
-
-    });
-
-    variants.sort((a, b) => {
-
-        const colorA =
-            this.getCharacteristic(
-                a,
-                CONFIG.colorField
-            ) || "";
-
-        const colorB =
-            this.getCharacteristic(
-                b,
-                CONFIG.colorField
-            ) || "";
-
-        return colorA.localeCompare(
-            colorB,
-            "ru"
-        );
-
-    });
-
-    return variants;
-
-}
+getVariants
 
 
 render() {
@@ -296,8 +242,10 @@ renderCatalog() {
 )
         .forEach(card => {
 
-           if (card.querySelector(".product-colors")) {
-    return;
+      const old = card.querySelector(".product-colors");
+
+if (old) {
+    old.remove();
 }
 
             const uid =
@@ -410,6 +358,9 @@ console.count("createColorBlock");
 
     const list = block.querySelector(".product-colors__list");
 
+variants = [...new Map(
+    variants.map(v => [String(v.uid), v])
+).values()];
     variants.forEach(product => {
 
         const colorName =
@@ -494,40 +445,11 @@ openVariant(uid) {
 
     uid = String(uid);
 
-    const openCard = () => {
+    const card = document.querySelector(
+        `.js-product[data-product-uid="${uid}"]`
+    );
 
-        const card = document.querySelector(
-            `.js-product[data-product-uid="${uid}"]`
-        );
-
-        if (card) {
-
-            const link = card.querySelector(
-                'a[href*="/tproduct/"]'
-            );
-
-            if (link) {
-               link.dispatchEvent(new MouseEvent("mousedown", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
-
-link.dispatchEvent(new MouseEvent("mouseup", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
-
-link.dispatchEvent(new MouseEvent("click", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
-                return;
-            }
-
-        }
+    if (!card) {
 
         const product = this.products.find(
             p => String(p.uid) === uid
@@ -537,55 +459,44 @@ link.dispatchEvent(new MouseEvent("click", {
             location.href = product.url;
         }
 
-    };
+        return;
+
+    }
 
     const popup = document.querySelector(".t-popup_show");
 
     if (!popup) {
 
-        openCard();
+        card.querySelector("a")?.click();
         return;
 
     }
 
-    const close = popup.querySelector(".t-popup__close");
+    popup.style.opacity = "0";
 
-    if (!close) {
-
-        openCard();
-        return;
-
-    }
-
-  close.click();
-
-    popup.style.transition = "opacity .12s";
-popup.style.opacity = "0";
-
-close.click();
-
-setTimeout(() => {
-
-    openCard();
+    card.querySelector("a")?.click();
 
     const wait = setInterval(() => {
 
-        const newPopup = document.querySelector(".t-popup_show");
+        const current = document.querySelector(
+            ".t-popup_show .js-catalog-product"
+        );
 
-        if (!newPopup) return;
+        if (!current) return;
+
+        if (String(current.dataset.productUid) !== uid) {
+            return;
+        }
 
         clearInterval(wait);
 
-        newPopup.style.opacity = "0";
-        newPopup.style.transition = "opacity .12s";
-
         requestAnimationFrame(() => {
-            newPopup.style.opacity = "1";
+
+            popup.style.opacity = "1";
+
         });
 
-    }, 20);
-
-}, 120);
+    }, 30);
 
 }
 refresh() {
