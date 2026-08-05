@@ -477,7 +477,17 @@ openVariant(uid) {
 
             this.current = current;
 
-            this.render();
+           requestAnimationFrame(() => {
+
+    this.render();
+
+    requestAnimationFrame(() => {
+
+        this.renderCatalog();
+
+    });
+
+});
 
         }
 
