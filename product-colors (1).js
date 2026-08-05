@@ -50,7 +50,6 @@ const COLOR_MAP = {
     "Медный век":"#A46B4E",
     "Серебряный век":"#A7B6C3",
 "Белый глянец":"#FFFFFF",
-"Белый глянец":"#FFFFFF",
 "Капучино":"#C9A27E",
 "Антрацит":"#3C4043",
 "Латунь":"#C4A04A",
@@ -319,8 +318,10 @@ renderCatalog() {
 )
         .forEach(card => {
 
-           if (card.querySelector(".product-colors")) {
-    return;
+const old = card.querySelector(".product-colors");
+
+if (old) {
+    old.remove();
 }
 
             const uid =
@@ -359,7 +360,7 @@ if (!target) {
 if (target.classList.contains("t-catalog__card_sku")) {
     target.after(block);
 } else {
-    target.before(block);
+    target.parentNode.insertBefore(block, target);
 }
 
         });
@@ -434,10 +435,9 @@ console.count("createColorBlock");
                 CONFIG.colorField
             ) || "";
 
-        const color =
-            COLOR_MAP[colorName] || "#cccccc";
-
-        const item = document.createElement("button");
+               const item = document.createElement("button");
+const color =
+    COLOR_MAP[colorName] || "#cccccc";
 
         item.type = "button";
 
