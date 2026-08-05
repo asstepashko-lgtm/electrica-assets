@@ -45,11 +45,7 @@ class CatalogCache {
         return;
     }
 
-    const storepartuid = new URL(api)
-        .searchParams
-        .get("storepartuid");
-
-    this.saveCatalog(products, storepartuid);
+   this.saveCatalog(products);
 
 }
 
@@ -109,38 +105,76 @@ async loadCatalog(api) {
 
     url.searchParams.set("size", 500);
 
-    url.searchParams.set("slice", 1);
+    let slice = 1;
+    let products = [];
 
-    this.log("URL", url.toString());
+    while (true) {
 
-    const response = await fetch(url.toString());
+        url.searchParams.set("slice", slice);
 
-    if (!response.ok) {
+        const response = await fetch(url.toString());
 
-        throw new Error("Ошибка загрузки каталога");
+        if (!response.ok) {
+            throw new Error("Ошибка загрузки каталога");
+        }
+
+        const json = await response.json();
+
+        const part = json.products || [];
+
+        this.log(`Slice ${slice}: ${part.length}`);
+
+        products.push(...part);
+console.log(
+    "Bironi:",
+    part.filter(p => p.brand === "Bironi").length
+);
+
+console.log(
+    part.filter(p => p.brand === "Bironi").slice(0, 5)
+);
+
+        if (part.length < 500) {
+            break;
+        }
+
+        slice++;
 
     }
-
-    const json = await response.json();
-
-    const products = json.products || [];
 
     this.log("Всего товаров", products.length);
 
     return products;
 
 }
-saveCatalog(products, storepartuid) {
+saveCatalog(products) {
+
+    // Оставляем только нужные поля
+    const shortProducts = products.map(product => ({
+
+        uid: String(product.uid),
+
+        sku: product.sku || "",
+
+        url: product.url || "",
+
+        title: product.title || "",
+
+        brand: product.brand || "",
+
+        characteristics: product.characteristics || []
+
+    }));
 
     localStorage.setItem(
 
-        CONFIG.cachePrefix + storepartuid,
+        "pc_catalog_all",
 
         JSON.stringify({
 
-            time: Date.now(),
+            updated: Date.now(),
 
-            products: products
+            products: shortProducts
 
         })
 
@@ -148,7 +182,11 @@ saveCatalog(products, storepartuid) {
 
     this.log(
         "Каталог сохранён:",
-        products.length
+        shortProducts.length
+    );
+
+    window.dispatchEvent(
+        new CustomEvent("catalogUpdated")
     );
 
 }
