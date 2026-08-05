@@ -84,7 +84,7 @@ async loadCatalog(storepartuid) {
 
         url.searchParams.set("storepartuid", storepartuid);
         url.searchParams.set("slice", slice);
-        url.searchParams.set("size", 500);
+        url.searchParams.set("size", 1000);
         url.searchParams.set("getallparts", "true");
         url.searchParams.set("getoptions", "true");
         url.searchParams.set("getbreadcrumbs[]", "parts");
