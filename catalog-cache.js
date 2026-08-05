@@ -108,6 +108,12 @@ console.log("next slice:", slice);
 console.log(json);
 
         const part = json.products || [];
+console.log(
+    "slice",
+    slice,
+    "получено",
+    part.length
+);
 
         this.log(
             `storepart ${storepartuid}, slice ${slice}: ${part.length}`
