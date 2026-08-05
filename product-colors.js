@@ -266,11 +266,8 @@ root.querySelectorAll(
     ".js-product[data-product-uid]"
 )
         .forEach(card => {
-
-      const old = card.querySelector(".product-colors");
-
-if (old) {
-    old.remove();
+if (card.querySelector(".product-colors")) {
+    return;
 }
 
             const uid =
@@ -444,88 +441,127 @@ openVariant(uid) {
 
     uid = String(uid);
 
-   const card =
-    document.querySelector(`.js-product[data-product-uid="${uid}"]`) ||
-    document.querySelector(`.js-catalog-product[data-product-uid="${uid}"]`);
-
-    
-    const popup = document.querySelector(".t-popup_show");
-if (!card) {
-
     const product = this.products.find(
         p => String(p.uid) === uid
     );
 
-    if (product) {
-        location.href = product.url;
-    }
-
-    return;
-
-}
-if (!popup) {
-
-    const product = this.products.find(
-        p => String(p.uid) === uid
-    );
-
-    if (product) {
-        location.href = product.url;
-    }
-
-    return;
-
-}
-
-    card.querySelector("a")?.click();
-
-    let tries = 0;
-
-    const timer = setInterval(() => {
-
-        tries++;
-
-        const current = this.getCurrentProduct();
-
-        if (
-            current &&
-            String(current.uid) === uid
-        ) {
-
-            clearInterval(timer);
-
-            this.current = current;
-
-          requestAnimationFrame(() => {
-
-    this.render();
-
-});
-const waitRecommendations = setInterval(() => {
-
-    const count = document.querySelectorAll(
-        ".t-catalog__relevants__container .js-product"
-    ).length;
-
-    if (!count) {
+    if (!product) {
         return;
     }
 
-    clearInterval(waitRecommendations);
+    const openCard = () => {
 
-    this.renderRecommendations();
+        const card = document.querySelector(
+            `.js-product[data-product-uid="${uid}"]`
+        );
 
-},30);
+        if (!card) {
+            location.href = product.url;
+            return;
+        }
+
+        const link = card.querySelector('a[href*="/tproduct/"]');
+
+        if (!link) {
+            location.href = product.url;
+            return;
+        }
+
+        link.dispatchEvent(new MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        link.dispatchEvent(new MouseEvent("mouseup", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        link.dispatchEvent(new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+    };
+
+    const popup = document.querySelector(".t-popup_show");
+
+    // Нет popup — просто открываем товар
+    if (!popup) {
+
+        openCard();
+        return;
+
+    }
+
+    // Popup открыт
+    const close = popup.querySelector(".t-popup__close");
+
+    if (!close) {
+
+        openCard();
+        return;
+
+    }
+
+    close.click();
+
+    let tries = 0;
+
+    const waitPopup = setInterval(() => {
+
+        tries++;
+
+        const newPopup = document.querySelector(".t-popup_show");
+
+        if (!newPopup) {
+
+            openCard();
+            clearInterval(waitPopup);
+
+            const waitRender = setInterval(() => {
+
+                const current = this.getCurrentProduct();
+
+                if (
+                    current &&
+                    String(current.uid) === uid
+                ) {
+
+                    clearInterval(waitRender);
+
+                    this.current = current;
+
+                    requestAnimationFrame(() => {
+
+                        this.render();
+
+                        setTimeout(() => {
+
+                            this.renderRecommendations();
+
+                        }, 100);
+
+                    });
+
+                }
+
+            }, 20);
 
         }
 
-        if (tries > 20) {
+        if (tries > 50) {
 
-            clearInterval(timer);
+            clearInterval(waitPopup);
+
+            location.href = product.url;
 
         }
 
-    },20);
+    }, 20);
 
 }
 refresh() {
