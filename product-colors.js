@@ -49,7 +49,13 @@ const COLOR_MAP = {
     "Карельская сосна":"#E5CAA3",
     "Медный век":"#A46B4E",
     "Серебряный век":"#A7B6C3",
-"Белый глянец":"#FFFFFF"
+"Белый глянец":"#FFFFFF",
+"Капучино": "#C9A27E",
+    "Антрацит": "#3C4043",
+    "Латунь": "#C4A04A",
+    "Никель": "#B8BDC3",
+    "Платина": "#D7D8DA",
+    "Золото": "#D4AF37"
 
 };
 
@@ -452,7 +458,36 @@ openVariant(uid) {
 
     }
 
-  card.querySelector("a")?.click();
+    card.querySelector("a")?.click();
+
+    let tries = 0;
+
+    const timer = setInterval(() => {
+
+        tries++;
+
+        const current = this.getCurrentProduct();
+
+        if (
+            current &&
+            String(current.uid) === uid
+        ) {
+
+            clearInterval(timer);
+
+            this.current = current;
+
+            this.render();
+
+        }
+
+        if (tries > 20) {
+
+            clearInterval(timer);
+
+        }
+
+    },20);
 
 }
 refresh() {
@@ -484,28 +519,17 @@ window.addEventListener("catalogUpdated", () => {
     window.ProductColors.refresh();
 });
 
-    const observer = new MutationObserver(() => {
+   const observer = new MutationObserver(() => {
 
     clearTimeout(window.ProductColors.observerTimer);
 
     window.ProductColors.observerTimer = setTimeout(() => {
 
-        const popup = document.querySelector(".t-popup_show");
-
-        if (popup) {
-
-            window.ProductColors.current =
-                window.ProductColors.getCurrentProduct();
-
-            window.ProductColors.render();
-
-        } else {
-
+        if (!document.querySelector(".t-popup_show")) {
             window.ProductColors.renderCatalog();
-
         }
 
-    },100);
+    },30);
 
 });
     observer.observe(document.body, {
