@@ -444,32 +444,38 @@ openVariant(uid) {
 
     uid = String(uid);
 
-    const card = document.querySelector(
-        `.js-product[data-product-uid="${uid}"]`
+   const card =
+    document.querySelector(`.js-product[data-product-uid="${uid}"]`) ||
+    document.querySelector(`.js-catalog-product[data-product-uid="${uid}"]`);
+
+    
+    const popup = document.querySelector(".t-popup_show");
+if (!card) {
+
+    const product = this.products.find(
+        p => String(p.uid) === uid
     );
 
-    if (!card) {
-
-        const product = this.products.find(
-            p => String(p.uid) === uid
-        );
-
-        if (product) {
-            location.href = product.url;
-        }
-
-        return;
-
+    if (product) {
+        location.href = product.url;
     }
 
-    const popup = document.querySelector(".t-popup_show");
+    return;
 
-    if (!popup) {
+}
+if (!popup) {
 
-        card.querySelector("a")?.click();
-        return;
+    const product = this.products.find(
+        p => String(p.uid) === uid
+    );
 
+    if (product) {
+        location.href = product.url;
     }
+
+    return;
+
+}
 
     card.querySelector("a")?.click();
 
@@ -490,17 +496,26 @@ openVariant(uid) {
 
             this.current = current;
 
-           requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
 
     this.render();
 
-    requestAnimationFrame(() => {
-
-        this.renderCatalog();
-
-    });
-
 });
+const waitRecommendations = setInterval(() => {
+
+    const count = document.querySelectorAll(
+        ".t-catalog__relevants__container .js-product"
+    ).length;
+
+    if (!count) {
+        return;
+    }
+
+    clearInterval(waitRecommendations);
+
+    this.renderRecommendations();
+
+},30);
 
         }
 
