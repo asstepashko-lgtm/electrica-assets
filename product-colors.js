@@ -600,7 +600,7 @@ refresh() {
 }
 
 }
-
+window.ProductColors = new ProductColors();
 window.addEventListener("load", () => {
 
     window.ProductColors.init();
