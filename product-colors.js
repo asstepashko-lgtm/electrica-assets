@@ -498,36 +498,27 @@ openVariant(uid) {
 
     const openCard = () => {
 
-        const card = document.querySelector(
-            `.js-product[data-product-uid="${uid}"]`
-        );
+       const cards = [...document.querySelectorAll(
+    `.js-product[data-product-uid="${uid}"]`
+)];
 
-        if (card) {
+const card = cards.find(card =>
+    card.closest(".js-store-grid-cont") ||
+    card.closest(".t-store__grid-cont") ||
+    card.closest(".t-store")
+) || cards[0];
 
-            const link = card.querySelector(
-                'a[href*="/tproduct/"]'
-            );
+       if (card) {
 
-            if (link) {
-               link.dispatchEvent(new MouseEvent("mousedown", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
+    card.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+    }));
 
-link.dispatchEvent(new MouseEvent("mouseup", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
+    return;
 
-link.dispatchEvent(new MouseEvent("click", {
-    bubbles: true,
-    cancelable: true,
-    view: window
-}));
-                return;
-            }
+}
 
         }
 
@@ -536,8 +527,26 @@ link.dispatchEvent(new MouseEvent("click", {
         );
 
         if (product) {
-            location.href = product.url;
+
+    setTimeout(() => {
+
+        const retry = document.querySelector(
+            `.js-product[data-product-uid="${uid}"`
+        );
+
+        if (retry) {
+
+            retry.click();
+
+            return;
+
         }
+
+        location.href = product.url;
+
+    }, 250);
+
+}
 
     };
 
