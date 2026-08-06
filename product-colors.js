@@ -348,9 +348,6 @@ if (!current) {
     return;
 }
 
-if (!current.url) {
-    return;
-}
             const variants = this.getVariants(current);
 
             if (variants.length < 2) {
@@ -366,15 +363,7 @@ block.dataset.uid = current.uid;
     card.querySelector(".js-catalog-price-wrapper");
 
 if (!target) {
-
-    setTimeout(() => {
-
-        this.render();
-
-    }, 300);
-
     return;
-
 }
 
 if (target.classList.contains("t-catalog__card_sku")) {
@@ -520,7 +509,7 @@ const card = cards.find(card =>
 
 }
 
-        }
+  
 
         const product = this.products.find(
             p => String(p.uid) === uid
@@ -531,7 +520,7 @@ const card = cards.find(card =>
     setTimeout(() => {
 
         const retry = document.querySelector(
-            `.js-product[data-product-uid="${uid}"`
+             `.js-product[data-product-uid="${uid}"]`
         );
 
         if (retry) {
