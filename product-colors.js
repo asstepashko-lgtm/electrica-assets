@@ -69,7 +69,7 @@ class ProductColors {
         this.products = [];
 
         this.current = null;
-
+this.observerTimer = null;
 
     }
 
@@ -100,8 +100,9 @@ async init() {
         this.render();
     }
 
-     this.log("Товаров:", this.products.length);
-console.log("renderCatalog finished");
+    this.startPopupWatcher();
+
+    this.log("Товаров:", this.products.length);
 
 }
 readCatalog() {
@@ -116,40 +117,32 @@ readCatalog() {
 
                 const cache = JSON.parse(localStorage.getItem(key));
 
-                if (!cache || !cache.products) {
-                    return;
-                }
+                if (!cache?.products) return;
 
-                cache.products.forEach(product => {
+               cache.products.forEach(product => {
 
-                    if (product && product.uid) {
+    if (product?.uid) {
 
-                        products.set(
-                            String(product.uid),
-                            product
-                        );
+        products.set(
+            String(product.uid),
+            product
+        );
 
-                    }
+    }
 
-                });
+});
 
-            } catch(e){
-
-                console.warn(e);
-
+            } catch (e) {
+                console.warn("Ошибка чтения", key, e);
             }
 
         });
 
-    this.products = [...products.values()];
+    const result = [...products.values()];
 
-    this.log(
-        "Товаров:",
-        this.products.length
-    );
+    this.log("Товаров:", result.length);
 
-    return this.products;
-
+    return result;
 }
 getCurrentUid() {
 
@@ -302,20 +295,12 @@ console.count("render");
 
     }
 
-   if (
-    block.dataset.uid === String(this.current.uid)
-) {
-    return;
-}
+    const newBlock = this.createColorBlock(
+        variants,
+        this.current
+    );
 
-const newBlock = this.createColorBlock(
-    variants,
-    this.current
-);
-
-newBlock.dataset.uid = this.current.uid;
-
-block.replaceWith(newBlock);
+    block.replaceWith(newBlock);
 
 }
 renderCatalog() {
@@ -324,13 +309,11 @@ renderCatalog() {
     ".js-product[data-product-uid]"
 )
         .forEach(card => {
-console.log("Карточка", card.dataset.productUid);
 
-const old = card.querySelector(".product-colors");
-
-if (old) {
-      old.remove();
+           if (card.querySelector(".product-colors")) {
+    return;
 }
+
             const uid =
                 card.dataset.productUid ||
                 card.querySelector("[data-product-uid]")?.dataset.productUid;
@@ -339,14 +322,13 @@ if (old) {
                 return;
             }
 
-   const current = this.products.find(product =>
-    String(product.uid) === String(uid)
-);
-console.log("current =", current);
+            const current = this.products.find(product =>
+                String(product.uid) === String(uid)
+            );
 
-if (!current) {
-    return;
-}
+            if (!current) {
+                return;
+            }
 
             const variants = this.getVariants(current);
 
@@ -357,7 +339,6 @@ const block = this.createColorBlock(
     variants,
     current
 );
-block.dataset.uid = current.uid;
             const target =
     card.querySelector(".t-catalog__card_sku") ||
     card.querySelector(".js-catalog-price-wrapper");
@@ -369,18 +350,52 @@ if (!target) {
 if (target.classList.contains("t-catalog__card_sku")) {
     target.after(block);
 } else {
-    target.parentNode.insertBefore(block, target);
+    target.before(block);
 }
 
         });
 
 }
+startPopupWatcher() {
 
+    let lastUid = null;
+
+    setInterval(() => {
+
+        const popup = document.querySelector(".t-popup_show");
+
+        if (!popup) {
+
+            lastUid = null;
+            return;
+
+        }
+
+        const uid = this.getCurrentUid();
+
+        if (!uid) {
+            return;
+        }
+
+        if (uid === lastUid) {
+            return;
+        }
+
+        lastUid = uid;
+
+        this.current = this.getCurrentProduct();
+
+        if (this.current) {
+            this.render();
+        }
+
+    }, 100);
+
+}
 createColorBlock(variants, current) {
 console.count("createColorBlock");
 
     const block = document.createElement("div");
-block.dataset.uid = current.uid;
 
     block.className = "product-colors";
 
@@ -410,9 +425,10 @@ block.dataset.uid = current.uid;
                 CONFIG.colorField
             ) || "";
 
-               const item = document.createElement("button");
-const color =
-    COLOR_MAP[colorName] || "#cccccc";
+        const color =
+            COLOR_MAP[colorName] || "#cccccc";
+
+        const item = document.createElement("button");
 
         item.type = "button";
 
@@ -487,55 +503,46 @@ openVariant(uid) {
 
     const openCard = () => {
 
-       const cards = [...document.querySelectorAll(
-    `.js-product[data-product-uid="${uid}"]`
-)];
+        const card = document.querySelector(
+            `.js-product[data-product-uid="${uid}"]`
+        );
 
-const card = cards.find(card =>
-    card.closest(".js-store-grid-cont") ||
-    card.closest(".t-store__grid-cont") ||
-    card.closest(".t-store")
-) || cards[0];
+        if (card) {
 
-       if (card) {
+            const link = card.querySelector(
+                'a[href*="/tproduct/"]'
+            );
 
-    card.dispatchEvent(new MouseEvent("click", {
-        bubbles: true,
-        cancelable: true,
-        view: window
-    }));
+            if (link) {
+               link.dispatchEvent(new MouseEvent("mousedown", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
 
-    return;
+link.dispatchEvent(new MouseEvent("mouseup", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
 
-}
+link.dispatchEvent(new MouseEvent("click", {
+    bubbles: true,
+    cancelable: true,
+    view: window
+}));
+                return;
+            }
 
-  
+        }
 
         const product = this.products.find(
             p => String(p.uid) === uid
         );
 
         if (product) {
-
-    setTimeout(() => {
-
-        const retry = document.querySelector(
-             `.js-product[data-product-uid="${uid}"]`
-        );
-
-        if (retry) {
-
-            retry.click();
-
-            return;
-
+            location.href = product.url;
         }
-
-        location.href = product.url;
-
-    }, 250);
-
-}
 
     };
 
@@ -557,6 +564,7 @@ const card = cards.find(card =>
 
     }
 
+  close.click();
 
     popup.style.transition = "opacity .12s";
 popup.style.opacity = "0";
@@ -606,69 +614,31 @@ refresh() {
 }
 
 }
-function observeCatalog(){
 
-    const observer = new MutationObserver(() => {
+window.ProductColors = new ProductColors();
 
-        clearTimeout(window.pcTimer);
-
-        window.pcTimer = setTimeout(() => {
-
-            window.ProductColors.renderCatalog();
-
-        }, 300);
-
-    });
-
-
-    observer.observe(document.body, {
-        childList:true,
-        subtree:true
-    });
-
-}
-function observePopup(){
-
-    const observer = new MutationObserver(() => {
-
-        const popup = document.querySelector(".t-popup_show");
-
-        if (popup) {
-
-            setTimeout(() => {
-
-                window.ProductColors.current =
-                    window.ProductColors.getCurrentProduct();
-
-                window.ProductColors.render();
-
-            }, 500);
-
-        }
-
-    });
-
-
-    observer.observe(document.body,{
-        childList:true,
-        subtree:true
-    });
-
-}
 window.addEventListener("load", () => {
-
-    window.ProductColors = new ProductColors();
 
     window.ProductColors.init();
 
-    setTimeout(() => {
+    const observer = new MutationObserver(() => {
 
-        window.ProductColors.renderCatalog();
+        clearTimeout(window.ProductColors.observerTimer);
 
-        observeCatalog();
-observePopup();
+        window.ProductColors.observerTimer = setTimeout(() => {
 
-    }, 500);
+            window.ProductColors.renderCatalog();
+
+        }, 100);
+
+    });
+
+    observer.observe(document.body, {
+
+        childList: true,
+        subtree: true
+
+    });
 
 });
 
