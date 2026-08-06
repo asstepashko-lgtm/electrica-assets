@@ -366,7 +366,15 @@ block.dataset.uid = current.uid;
     card.querySelector(".js-catalog-price-wrapper");
 
 if (!target) {
+
+    setTimeout(() => {
+
+        this.render();
+
+    }, 300);
+
     return;
+
 }
 
 if (target.classList.contains("t-catalog__card_sku")) {
@@ -604,22 +612,49 @@ function observeCatalog(){
 
     const observer = new MutationObserver(() => {
 
-        window.ProductColors.renderCatalog();
+        clearTimeout(window.pcTimer);
+
+        window.pcTimer = setTimeout(() => {
+
+            window.ProductColors.renderCatalog();
+
+        }, 300);
 
     });
 
-    const catalog = document.querySelector(
-        ".js-store-grid-cont"
-    );
 
-    if (catalog) {
+    observer.observe(document.body, {
+        childList:true,
+        subtree:true
+    });
 
-        observer.observe(catalog, {
-            childList:true,
-            subtree:true
-        });
+}
+function observePopup(){
 
-    }
+    const observer = new MutationObserver(() => {
+
+        const popup = document.querySelector(".t-popup_show");
+
+        if (popup) {
+
+            setTimeout(() => {
+
+                window.ProductColors.current =
+                    window.ProductColors.getCurrentProduct();
+
+                window.ProductColors.render();
+
+            }, 500);
+
+        }
+
+    });
+
+
+    observer.observe(document.body,{
+        childList:true,
+        subtree:true
+    });
 
 }
 window.addEventListener("load", () => {
@@ -633,6 +668,7 @@ window.addEventListener("load", () => {
         window.ProductColors.renderCatalog();
 
         observeCatalog();
+observePopup();
 
     }, 500);
 
