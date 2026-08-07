@@ -123,16 +123,16 @@ async loadCatalog(storepartuid) {
 
         products.push(...part);
 if (json.nextslice == null) {
-            this.log("Конец каталога");
-            break;
-        }
+    this.log("Конец каталога");
+    break;
+}
 
-        if (json.nextslice === slice) {
-            this.log("nextslice зациклился");
-            break;
-        }
+if (loadedSlices.has(json.nextslice)) {
+    this.log("Страница уже была:", json.nextslice);
+    break;
+}
 
-        slice = json.nextslice;
+slice = json.nextslice;
 
     }
 
