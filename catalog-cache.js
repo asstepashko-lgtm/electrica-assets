@@ -76,60 +76,89 @@ class CatalogCache {
 async loadCatalog(storepartuid) {
 
     let slice = 1;
-    let products = [];
+
+    const products = [];
+    const loadedSlices = new Set();
 
     while (true) {
 
-        const url = new URL("https://store.tildaapi.com/api/getproductslist/");
+        if (loadedSlices.has(slice)) {
+            this.log("Повтор страницы", slice);
+            break;
+        }
+
+        loadedSlices.add(slice);
+
+        const url = new URL(
+            "https://store.tildaapi.com/api/getproductslist/"
+        );
 
         url.searchParams.set("storepartuid", storepartuid);
         url.searchParams.set("slice", slice);
-        url.searchParams.set("size", 1000);
         url.searchParams.set("getallparts", "true");
         url.searchParams.set("getoptions", "true");
-        url.searchParams.set("getbreadcrumbs[]", "parts");
-        url.searchParams.set("getbreadcrumbs[1]", "products");
+        url.searchParams.set("size", "1000");
         url.searchParams.set("c", Date.now());
 
-        this.log(url.toString());
-
-        const response = await fetch(url.toString());
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(
-                `Ошибка загрузки ${storepartuid} (slice ${slice})`
+                `Ошибка загрузки ${storepartuid}, slice ${slice}`
             );
         }
 
         const json = await response.json();
-console.log(json);
-console.log("products:", json.products.length);
-console.log("next slice:", slice);
-console.log(json);
 
         const part = json.products || [];
-console.log(
-    "slice",
-    slice,
-    "получено",
-    part.length
-);
 
         this.log(
-            `storepart ${storepartuid}, slice ${slice}: ${part.length}`
+            "page",
+            slice,
+            "товаров",
+            part.length,
+            "next",
+            json.nextslice
         );
 
         products.push(...part);
-
-        if (part.length < 500) {
+if (json.nextslice == null) {
+            this.log("Конец каталога");
             break;
         }
 
-        slice++;
+        if (json.nextslice === slice) {
+            this.log("nextslice зациклился");
+            break;
+        }
+
+        slice = json.nextslice;
 
     }
 
-    return products;
+    // удаляем дубли по uid
+    const unique = [];
+    const ids = new Set();
+
+    for (const product of products) {
+
+        if (ids.has(product.uid)) {
+            continue;
+        }
+
+        ids.add(product.uid);
+        unique.push(product);
+
+    }
+
+    this.log(
+        "Загружено:",
+        products.length,
+        "Уникальных:",
+        unique.length
+    );
+
+    return unique;
 
 }
 saveCatalog(products) {
